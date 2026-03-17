@@ -17,7 +17,7 @@ return new class extends Migration
         
         // Datos del pago
         $table->string('banco_origen'); // Ej: Banesco, BDV
-        $table->enum('metodo_pago', ['pago_movil', 'transferencia', 'efectivo_usd']);
+        $table->enum('metodo_pago', ['pago_movil', 'transferencia', 'efectivo_usd'])->default('pago_movil');
         $table->string('referencia')->nullable(); // Nullable por si es efectivo
         $table->decimal('monto_ves', 12, 2)->nullable();
         $table->decimal('monto_usd', 8, 2)->nullable(); // Por si pagan en divisas físicas

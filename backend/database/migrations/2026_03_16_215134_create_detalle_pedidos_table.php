@@ -14,7 +14,8 @@ return new class extends Migration
     Schema::create('detalles_pedidos', function (Blueprint $table) {
         $table->id();
         $table->foreignId('pedido_id')->constrained('pedidos')->onDelete('cascade');
-        $table->foreignId('tipo_bombona_id')->constrained('tipos_bombonas')->onDelete('restrict');
+
+        $table->foreignId('jornada_bombona_id')->constrained('jornada_bombonas')->onDelete('restrict');
         
         $table->integer('cantidad');
         // GUARDAMOS EL PRECIO AQUÍ: Es vital por si el precio global cambia en el futuro, no altere facturas viejas.
