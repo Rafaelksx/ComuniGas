@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Super Administrador',
             'email' => 'superadmin@comunigas.com',
-            'password' => Hash::make('12345678'),
+            'password' => '12345678',
             'rol' => 'superadmin',
             'comunidad_id' => null, // El superadmin no se ata a una sola comunidad
         ]);
@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Carlos Coordinador',
             'email' => 'admin@altavista.com',
             'telefono' => '04141234567',
-            'password' => Hash::make('12345678'),
+            'password' => '12345678',
             'rol' => 'admin_comunidad',
             'identificador_vivienda' => 'Torre A - P.B.',
             'comunidad_id' => $comunidad->id,

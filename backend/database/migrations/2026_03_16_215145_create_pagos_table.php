@@ -16,7 +16,7 @@ return new class extends Migration
         $table->foreignId('pedido_id')->constrained('pedidos')->onDelete('cascade');
         
         // Datos del pago
-        $table->string('banco_origen'); // Ej: Banesco, BDV
+        $table->string('banco_origen')->nullable(); // Ej: Banesco, BDV
         $table->enum('metodo_pago', ['pago_movil', 'transferencia', 'efectivo_usd'])->default('pago_movil');
         $table->string('referencia')->nullable(); // Nullable por si es efectivo
         $table->decimal('monto_ves', 12, 2)->nullable();

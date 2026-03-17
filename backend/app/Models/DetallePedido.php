@@ -23,8 +23,8 @@ class DetallePedido extends Model
     }
 
     // Este detalle apunta a un lote de bombona específico (Ej: 10kg Bolívar Gas)
-    public function lote()
-    {
-        return $this->belongsTo(JornadaBombona::class, 'jornada_bombona_id');
+    public function lote() 
+    { 
+        return $this->belongsTo(JornadaBombona::class, 'jornada_bombona_id'); 
     }
 }
