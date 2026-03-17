@@ -2,27 +2,29 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DetallePedido extends Model
 {
-    // Vital aquí, porque Laravel intentaría buscar "detalle_pedidos"
-    protected $table = 'detalles_pedidos'; 
-    
-    protected $guarded = ['id'];
+    use HasFactory;
 
-    protected $casts = [
-        'precio_unitario_usd' => 'decimal:2',
-        'cantidad' => 'integer',
+    protected $fillable = [
+        'pedido_id',
+        'jornada_bombona_id',
+        'cantidad',
+        'precio_unitario'
     ];
 
-    public function pedido() 
-    { 
-        return $this->belongsTo(Pedido::class); 
+    // Este detalle pertenece a una factura/pedido general
+    public function pedido()
+    {
+        return $this->belongsTo(Pedido::class);
     }
-    
-    public function tipoBombona() 
-    { 
-        return $this->belongsTo(TipoBombona::class, 'tipo_bombona_id'); 
+
+    // Este detalle apunta a un lote de bombona específico (Ej: 10kg Bolívar Gas)
+    public function lote()
+    {
+        return $this->belongsTo(JornadaBombona::class, 'jornada_bombona_id');
     }
 }
