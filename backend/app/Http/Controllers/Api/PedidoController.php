@@ -105,4 +105,26 @@ class PedidoController extends Controller
 
         return response()->json(['message' => 'Bombona marcada como entregada.']);
     }
+    
+    public function rechazarPago(Request $request, $id)
+    {
+        $pedido = Pedido::findOrFail($id);
+        $pedido->estado_pago = 'rechazado';
+        
+        if($pedido->pagos()->exists()){
+            $pedido->pagos()->update(['estado' => 'rechazado']);
+        }
+        $pedido->save();
+
+        return response()->json(['message' => 'Pago rechazado. El vecino debe verificar su referencia.']);
+    }
+
+    public function recibirVacia(Request $request, $id)
+    {
+        $pedido = Pedido::findOrFail($id);
+        $pedido->estado_fisico = 'vacia_entregada'; // Cambiamos el estado físico
+        $pedido->save();
+
+        return response()->json(['message' => 'Cilindro vacío recibido por el coordinador.']);
+    }
 }

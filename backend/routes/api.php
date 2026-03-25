@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('pedidos', PedidoController::class)->except(['update', 'destroy']);
     // Rutas específicas para el flujo del pedido
     Route::patch('/pedidos/{id}/verificar', [PedidoController::class, 'verificarPago']);
+    Route::patch('/pedidos/{id}/rechazar', [PedidoController::class, 'rechazarPago']); // NUEVA
+    Route::patch('/pedidos/{id}/recibir-vacia', [PedidoController::class, 'recibirVacia']); // NUEVA
     Route::patch('/pedidos/{id}/entregar', [PedidoController::class, 'entregar']);
 
     // 4. Rutas del Censo (Vecinos)
