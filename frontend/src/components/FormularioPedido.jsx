@@ -1,93 +1,153 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import axiosClient from '@/lib/axios';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosClient from '@/lib/axios';
 
 export default function FormularioPedido() {
     const router = useRouter();
-    const [jornadaActiva, setJornadaActiva] = useState(null);
+    const [jornada, setJornada] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [loteId, setLoteId] = useState('');
-    const [referencia, setReferencia] = useState('');
+    const [error, setError] = useState('');
 
+    const [formData, setFormData] = useState({
+        lote_id: '',
+        referencia_pago: '',
+    });
+
+    // Cargar la jornada activa para saber los precios y la tasa
     useEffect(() => {
-        const fetchJornadas = async () => {
+        const fetchJornada = async () => {
             try {
-                const response = await axiosClient.get('/jornadas');
-                const activa = response.data.find(j => j.estado !== 'finalizada');
-                setJornadaActiva(activa);
-            } catch (error) {
-                console.error('Error cargando jornada', error);
+                // Pedimos todas las jornadas y buscamos la que esté abierta
+                const res = await axiosClient.get('/jornadas');
+                const jornadaActiva = res.data.find(j => j.estado === 'abierta');
+
+                if (jornadaActiva) {
+                    setJornada(jornadaActiva);
+                } else {
+                    setError('No hay ninguna jornada de gas abierta en este momento.');
+                }
+            } catch (err) {
+                setError('Error al cargar la información de la jornada.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchJornadas();
+        fetchJornada();
     }, []);
+
+    // Calcular el monto en Bs en tiempo real según el lote seleccionado
+    const getMontoBs = () => {
+        if (!formData.lote_id || !jornada) return 0;
+        const lote = jornada.lotes.find(l => l.id.toString() === formData.lote_id);
+        if (!lote) return 0;
+        return (lote.precio_usd * jornada.tasa_bcv_dia).toFixed(2);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const loteSeleccionado = jornadaActiva.lotes.find(l => l.id.toString() === loteId);
-        const montoBs = loteSeleccionado.precio_usd * jornadaActiva.tasa_bcv_dia;
-
         try {
-            await axiosClient.post('/pedidos', {
-                jornada_id: jornadaActiva.id,
-                lote_id: loteId,
-                referencia_pago: referencia,
-                monto_bs: montoBs
-            });
-            alert('¡Pedido registrado! El coordinador verificará su pago pronto.');
+            const payload = {
+                jornada_id: jornada.id,
+                lote_id: formData.lote_id,
+                referencia_pago: formData.referencia_pago,
+                monto_bs: getMontoBs()
+            };
+
+            await axiosClient.post('/pedidos', payload);
+            alert('¡Tu pedido ha sido registrado con éxito! Está en espera de verificación.');
+
+            // Redirigir a la lista de "Mis Pedidos"
             router.push('/dashboard/pedidos');
+
         } catch (error) {
-            alert('Error al registrar el pedido. Revise la referencia.');
-            console.error(error);
+            alert(error.response?.data?.message || 'Error al registrar el pedido.');
         }
     };
 
-    if (loading) return <div>Cargando formulario...</div>;
-    if (!jornadaActiva) return <div className="p-4 bg-yellow-50 text-yellow-800 rounded">No hay operativos abiertos actualmente.</div>;
+    if (loading) return <div className="p-8">Buscando jornadas activas...</div>;
 
-    const loteSeleccionado = jornadaActiva.lotes.find(l => l.id.toString() === loteId);
-    const aPagarBs = loteSeleccionado ? (loteSeleccionado.precio_usd * jornadaActiva.tasa_bcv_dia).toFixed(2) : 0;
+    if (error) return (
+        <div className="max-w-2xl mx-auto mt-10 p-6 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200 shadow-sm text-center">
+            <h2 className="text-xl font-bold mb-2">Operativo Cerrado</h2>
+            <p>{error}</p>
+        </div>
+    );
+
+    const montoPagar = getMontoBs();
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">Solicitar Gas</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Solicitar Bombona</h1>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                <p><strong>Operativo Activo:</strong> {new Date(jornada.fecha_apertura).toLocaleDateString()}</p>
+                <p><strong>Tasa BCV de hoy:</strong> {jornada.tasa_bcv_dia} Bs</p>
+            </div>
+
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <p className="text-sm text-blue-800 font-semibold mb-1">Tasa BCV del operativo: {jornadaActiva.tasa_bcv_dia} Bs</p>
-                    <p className="text-xs text-blue-600">Por favor, realice su pago móvil antes de llenar este formulario.</p>
-                </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Seleccione la Bombona</label>
-                    <select required value={loteId} onChange={(e) => setLoteId(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3">
-                        <option value="">-- Seleccione una opción --</option>
-                        {jornadaActiva.lotes?.map(lote => (
-                            <option key={lote.id} value={lote.id}>
-                                {lote.capacidad} - {lote.marca} (${lote.precio_usd})
-                            </option>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona el tipo de cilindro</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {jornada.lotes.map(lote => (
+                            <label
+                                key={lote.id}
+                                className={`border rounded-lg p-4 cursor-pointer transition flex justify-between items-center
+                                    ${formData.lote_id === lote.id.toString() ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:bg-gray-50'}`}
+                            >
+                                <div>
+                                    <input
+                                        type="radio"
+                                        name="lote_id"
+                                        value={lote.id}
+                                        className="sr-only"
+                                        onChange={(e) => setFormData({ ...formData, lote_id: e.target.value })}
+                                        required
+                                    />
+                                    <span className="block font-bold text-gray-800">{lote.capacidad} - {lote.marca}</span>
+                                    <span className="block text-sm text-gray-500">Ref: ${lote.precio_usd}</span>
+                                </div>
+                                <div className="text-right">
+                                    <span className="block text-lg font-bold text-blue-600">
+                                        {(lote.precio_usd * jornada.tasa_bcv_dia).toFixed(2)} Bs
+                                    </span>
+                                </div>
+                            </label>
                         ))}
-                    </select>
+                    </div>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Referencia de Pago Móvil (Últimos 6 dígitos)</label>
-                    <input type="text" required maxLength="6" value={referencia} onChange={(e) => setReferencia(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3" placeholder="Ej: 123456" />
-                </div>
+                {formData.lote_id && (
+                    <div className="pt-4 border-t">
+                        <h3 className="font-semibold text-gray-800 mb-4">Datos del Pago Móvil</h3>
 
-                {loteSeleccionado && (
-                    <div className="bg-gray-50 p-4 rounded-lg text-center border">
-                        <p className="text-gray-500 text-sm">Monto a verificar:</p>
-                        <p className="text-3xl font-bold text-green-600">{aPagarBs} Bs</p>
+                        <div className="bg-gray-50 p-4 rounded-lg border mb-4 text-sm text-gray-600">
+                            <p>Realiza un pago móvil por exactamente <strong>{montoPagar} Bs</strong> a los datos indicados por tu Consejo Comunal.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Número de Referencia (Últimos 6 dígitos)</label>
+                            <input
+                                type="text" required
+                                placeholder="Ej: 123456"
+                                value={formData.referencia_pago}
+                                onChange={(e) => setFormData({ ...formData, referencia_pago: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg"
+                            />
+                        </div>
                     </div>
                 )}
 
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
-                    Reportar Pago
-                </button>
+                <div className="flex justify-end pt-4">
+                    <button
+                        type="submit"
+                        disabled={!formData.lote_id}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-bold transition w-full md:w-auto"
+                    >
+                        Reportar Pago y Pedir Gas
+                    </button>
+                </div>
             </form>
         </div>
     );

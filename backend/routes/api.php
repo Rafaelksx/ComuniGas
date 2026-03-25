@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\JornadaController;
 use App\Http\Controllers\Api\PedidoController;
 use App\Http\Controllers\Api\VecinoController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\Comunidad;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+
+// Ruta para obtener las comunidades en el select del formulario
+Route::get('/comunidades', function () {
+    return response()->json(Comunidad::select('id', 'nombre', 'direccion')->get());
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::get('/dashboard/resumen', [DashboardController::class, 'resumen']);
+    
     // 2. Rutas de Jornadas
     Route::apiResource('jornadas', JornadaController::class);
     // Rutas específicas para logística de Jornadas

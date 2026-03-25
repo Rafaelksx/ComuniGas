@@ -10,6 +10,35 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'telefono' => 'required|string|unique:users,telefono',
+            'password' => 'required|string|min:6',
+            'comunidad_id' => 'required|exists:comunidades,id',
+            'identificador_vivienda' => 'required|string|max:50',
+        ]);
+
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'telefono' => $request->telefono,
+            'email' => $request->telefono . '@comunigas.local',
+            'password' => $request->password, // El modelo lo encripta automáticamente
+            'rol' => 'vecino', // Forzamos a que todo el que se registre sea vecino
+            'comunidad_id' => $request->comunidad_id,
+            'identificador_vivienda' => $request->identificador_vivienda,
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user
+        ], 201);
+    }
+
     public function login(Request $request)
     {
         $request->validate([

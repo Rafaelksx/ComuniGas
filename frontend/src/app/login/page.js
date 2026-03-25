@@ -4,6 +4,7 @@ import { useState } from 'react';
 import axiosClient from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import Link from 'next/link';
 
 export default function LoginPage() {
     const [telefono, setTelefono] = useState('');
@@ -126,6 +127,9 @@ export default function LoginPage() {
                 </form>
 
                 <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                        ¿No tienes cuenta? <Link href="/registro" className="text-blue-600 hover:underline font-semibold">Regístrate aquí</Link>
+                    </p>
                     <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
                         Puerto Ordaz • Guayana
                     </p>

@@ -83,5 +83,65 @@ class JornadaController extends Controller
         }
     }
     
-    // Aquí luego agregaremos show(), update(), destroy()...
+    public function update(Request $request, $id)
+    {
+        $jornada = Jornada::findOrFail($id);
+
+        $validated = $request->validate([
+            'tasa_bcv_dia' => 'required|numeric|min:0',
+            'fecha_apertura' => 'required|date',
+            'fecha_cierre_pagos' => 'required|date|after_or_equal:fecha_apertura',
+        ]);
+
+        $jornada->update([
+            'tasa_bcv_dia' => $validated['tasa_bcv_dia'],
+            'fecha_apertura' => $validated['fecha_apertura'],
+            'fecha_cierre_pagos' => $validated['fecha_cierre_pagos'],
+        ]);
+
+        return response()->json([
+            'message' => 'Jornada actualizada exitosamente',
+            'jornada' => $jornada->load('lotes')
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $jornada = Jornada::findOrFail($id);
+
+        // Verificar si tiene pedidos asociados
+        $tienePedidos = \App\Models\Pedido::where('jornada_id', $id)->exists();
+        
+        if ($tienePedidos) {
+            return response()->json([
+                'message' => 'No se puede eliminar la jornada porque contiene pedidos. Puedes optar por cancelarla.'
+            ], 403);
+        }
+
+        // Si no tiene pedidos, borrar lotes y jornada
+        $jornada->lotes()->delete();
+        $jornada->delete();
+
+        return response()->json([
+            'message' => 'Jornada eliminada exitosamente'
+        ]);
+    }
+
+    public function updateEstatus(Request $request, $id)
+    {
+        $jornada = Jornada::findOrFail($id);
+        
+        $validated = $request->validate([
+            'estado' => 'required|in:abierta,recepcion_cilindros,en_planta,distribucion,finalizada,cancelada',
+        ]);
+
+        $jornada->update([
+            'estado' => $validated['estado']
+        ]);
+
+        return response()->json([
+            'message' => 'Estatus actualizado',
+            'jornada' => $jornada->load('lotes')
+        ]);
+    }
 }
