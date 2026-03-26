@@ -23,54 +23,57 @@ export default function ReporteJornada({ jornada, pedidos }) {
                 </div>
             </div>
 
-            {/* Tabla de Registros */}
-            <table className="w-full text-left border-collapse text-sm">
+            {/* Tabla de Registros Compactada */}
+            <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr className="bg-gray-100 border-b-2 border-black text-xs uppercase">
-                        <th className="py-3 px-2 border-r border-gray-300 w-8 text-center">N°</th>
-                        <th className="py-3 px-2 border-r border-gray-300">Vecino / Casa</th>
-                        <th className="py-3 px-2 border-r border-gray-300">Cilindros</th>
-                        <th className="py-3 px-2 border-r border-gray-300">Pago</th>
-                        <th className="py-3 px-2 border-r border-gray-300">Total (Bs)</th>
-                        <th className="py-3 px-2 text-center w-24">Firma / Checks</th>
+                    <tr className="bg-gray-100 border-b-2 border-black text-[10px] uppercase">
+                        <th className="py-1.5 px-1 border-r border-gray-300 w-6 text-center">N°</th>
+                        <th className="py-1.5 px-1.5 border-r border-gray-300 leading-tight">Vecino / Casa</th>
+                        <th className="py-1.5 px-1.5 border-r border-gray-300 leading-tight text-center">Cilindros</th>
+                        <th className="py-1.5 px-1.5 border-r border-gray-300 leading-tight text-center">Pago</th>
+                        <th className="py-1.5 px-1.5 border-r border-gray-300 leading-tight text-center">Total (Bs)</th>
+                        <th className="py-1.5 px-1.5 text-center w-20 leading-tight">Firma / Checks</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-300">
                     {pedidos.map((pedido, index) => {
-                        // Concatenar descripción de cilindros
-                        const descCilindros = pedido.detalles.map(d => `${d.cantidad}x ${d.lote?.capacidad}`).join(', ');
+                        // Concatenar descripción de cilindros con su marca (ej. 1x 10kg Tigasco)
+                        const descCilindros = pedido.detalles.map(d => `${d.cantidad}x ${d.lote?.capacidad} ${d.lote?.marca}`).join(', ');
                         
+                        // Limpiar sufijo de email ficticio
+                        const emailLimpio = pedido.user?.email?.replace('@comunigas.local', '') || 'N/A';
+
                         // Estado pago legible
                         let pagoTexto = "PENDIENTE";
                         if(pedido.estado_pago === 'verificado') pagoTexto = "PAGADO";
-                        else if(pedido.estado_pago === 'por_verificar') pagoTexto = "POR VERIFICAR";
+                        else if(pedido.estado_pago === 'por_verificar') pagoTexto = "XR VERIFICAR";
                         else if(pedido.estado_pago === 'rechazado') pagoTexto = "RECHAZADO";
 
                         return (
                             <tr key={pedido.id} className="print-avoid-break">
-                                <td className="py-3 px-2 border-r border-gray-300 text-center font-bold text-gray-500">{index + 1}</td>
-                                <td className="py-3 px-2 border-r border-gray-300">
-                                    <p className="font-bold text-base">{pedido.user?.name}</p>
-                                    <p className="text-xs text-gray-600">Casa: {pedido.user?.identificador_vivienda || 'N/A'}</p>
-                                    <p className="text-xs text-gray-500">CI/Tel: {pedido.user?.email}</p>
+                                <td className="py-1.5 px-1 border-r border-gray-300 text-center font-bold text-gray-500">{index + 1}</td>
+                                <td className="py-1.5 px-1.5 border-r border-gray-300">
+                                    <p className="font-bold text-sm leading-none mb-0.5">{pedido.user?.name}</p>
+                                    <p className="text-[10px] text-gray-600 leading-none mb-0.5">Casa: {pedido.user?.identificador_vivienda || 'N/A'}</p>
+                                    <p className="text-[10px] text-gray-500 leading-none">CI/Tel: <span className="font-mono">{emailLimpio}</span></p>
                                 </td>
-                                <td className="py-3 px-2 border-r border-gray-300 font-medium">
+                                <td className="py-1.5 px-1.5 border-r border-gray-300 font-medium text-[11px] text-center">
                                     {descCilindros}
                                 </td>
-                                <td className="py-3 px-2 border-r border-gray-300">
-                                    <p className={`font-bold text-xs ${pedido.estado_pago === 'verificado' ? 'text-black' : 'text-gray-500'}`}>
+                                <td className="py-1.5 px-1.5 border-r border-gray-300 text-center">
+                                    <p className={`font-bold text-[10px] ${pedido.estado_pago === 'verificado' ? 'text-black' : 'text-gray-500'}`}>
                                         {pagoTexto}
                                     </p>
                                     {pedido.pagos && pedido.pagos[0] && (
-                                        <p className="text-xs font-mono mt-0.5">Ref: {pedido.pagos[0].referencia}</p>
+                                        <p className="text-[9px] font-mono mt-0.5 leading-none tracking-tighter text-gray-700">Ref: {pedido.pagos[0].referencia}</p>
                                     )}
                                 </td>
-                                <td className="py-3 px-2 border-r border-gray-300 font-bold">
+                                <td className="py-1.5 px-1.5 border-r border-gray-300 font-bold text-center text-[11px] whitespace-nowrap">
                                     {pedido.total_ves} Bs
                                 </td>
-                                <td className="py-3 px-2 flex flex-col items-center justify-center gap-2 h-full min-h-[4rem]">
-                                    <div className="w-4 h-4 border border-black"></div>
-                                    <hr className="w-16 border-t border-gray-400 mt-2" />
+                                <td className="py-1 flex flex-col items-center justify-center gap-1.5 min-w-[5rem]">
+                                    <div className="w-3.5 h-3.5 border border-black"></div>
+                                    <hr className="w-12 border-t border-gray-400 mt-1" />
                                 </td>
                             </tr>
                         );
