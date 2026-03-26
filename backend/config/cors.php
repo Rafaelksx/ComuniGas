@@ -19,11 +19,11 @@ return [
     // Allowed HTTP methods for CORS requests
     'allowed_methods' => ['*'],
 
-    // Allowed origins (frontend origin). Use env to keep it configurable.
-    'allowed_origins' => [rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/')],
+    // Exact origin match (without trailing slash). Must match exactly.
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
-    // Use patterns if you need wildcard support like https://*.example.com
-    'allowed_origins_patterns' => [],
+    // Pattern matching to also accept URL with or without trailing slash.
+    'allowed_origins_patterns' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
     // Allowed headers that can be sent in the request
     'allowed_headers' => ['*'],
