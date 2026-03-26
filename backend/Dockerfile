@@ -30,7 +30,9 @@ COPY . /var/www/html
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # Asegurar permisos correctos para que Laravel guarde caché y logs
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p /var/www/html/storage/logs /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copiar el script de inicio y darle permisos
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
