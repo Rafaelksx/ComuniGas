@@ -26,8 +26,8 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Copiar todos los archivos del backend
 COPY . /var/www/html
 
-# Instalar dependencias del framework optimizadas para producción
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias del framework optimizadas para producción ignorando candados de versión de Sail
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # Asegurar permisos correctos para que Laravel guarde caché y logs
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
