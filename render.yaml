@@ -5,10 +5,9 @@
 services:
   - type: web
     name: comunigas-api
-    env: php
+    env: docker
     rootDir: backend
-    buildCommand: 'composer install -n --prefer-dist --optimize-autoloader && php artisan config:cache && php artisan migrate --force'
-    startCommand: 'php artisan serve --host=0.0.0.0 --port=$PORT'
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_NAME
         value: ComuniGas
