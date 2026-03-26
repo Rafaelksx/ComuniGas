@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
-      
+
       {/* Navbar Minimalista */}
       <nav className="w-full absolute top-0 p-6 flex justify-between items-center max-w-7xl mx-auto z-50">
         <div className="flex items-center gap-2 text-indigo-700 font-black text-2xl tracking-tighter">
@@ -18,23 +18,23 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto w-full pt-28 pb-16 z-10">
-        
+
         <div className="bg-blue-100 text-blue-800 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-8 flex items-center justify-center gap-2 shadow-sm border border-blue-200">
           <svg className="w-5 h-5 text-blue-600 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
           Plataforma Virtual
         </div>
-        
+
         <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight mb-8">
           El gas comunal de tu sector, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">organizado y transparente.</span>
         </h1>
-        
+
         <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-          Olvida las listas de papel, el desorden y las esperas. Pide tus cilindros de gas, reporta el pago móvil y 
+          Olvida las listas de papel, el desorden y las esperas. Pide tus cilindros de gas, reporta el pago móvil y
           visualiza cuando llegará el camión a tu urbanización en estricto tiempo real.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-4 justify-center">
-          <Link href="/register" className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl hover:bg-indigo-700 hover:-translate-y-1 transition-all">
+          <Link href="/registro" className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl hover:bg-indigo-700 hover:-translate-y-1 transition-all">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
             Inscríbete Hoy Mismo
           </Link>
@@ -70,13 +70,13 @@ export default function Home() {
         </div>
 
       </main>
-      
+
       {/* Elementos decorativos de fondo */}
       <div className="absolute top-0 right-0 -z-10 opacity-30 pointer-events-none mt-[-100px] mr-[-100px]">
-        <svg width="400" height="400" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="200" r="200" fill="url(#paint0_radial)"/><defs><radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 200) rotate(90) scale(200)"><stop stopColor="#6366f1"/><stop offset="1" stopColor="#818CF8" stopOpacity="0"/></radialGradient></defs></svg>
+        <svg width="400" height="400" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="200" r="200" fill="url(#paint0_radial)" /><defs><radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 200) rotate(90) scale(200)"><stop stopColor="#6366f1" /><stop offset="1" stopColor="#818CF8" stopOpacity="0" /></radialGradient></defs></svg>
       </div>
       <div className="absolute bottom-0 left-0 -z-10 opacity-20 pointer-events-none mb-[-100px] ml-[-100px]">
-        <svg width="300" height="300" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="150" cy="150" r="150" fill="url(#paint0_radial2)"/><defs><radialGradient id="paint0_radial2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 150) rotate(90) scale(150)"><stop stopColor="#3b82f6"/><stop offset="1" stopColor="#60a5fa" stopOpacity="0"/></radialGradient></defs></svg>
+        <svg width="300" height="300" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="150" cy="150" r="150" fill="url(#paint0_radial2)" /><defs><radialGradient id="paint0_radial2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 150) rotate(90) scale(150)"><stop stopColor="#3b82f6" /><stop offset="1" stopColor="#60a5fa" stopOpacity="0" /></radialGradient></defs></svg>
       </div>
 
     </div>
