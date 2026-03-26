@@ -284,7 +284,8 @@ export default function GestionJornadas() {
                     {/* DATOS DE PAGO MÓVIL */}
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                         <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                            <span>📲</span> Datos de Pago Móvil (para los vecinos)
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> 
+                            Datos de Pago Móvil (para los vecinos)
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -328,7 +329,8 @@ export default function GestionJornadas() {
 
             {/* TABLA DE JORNADAS */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Estatus</th>
@@ -394,6 +396,7 @@ export default function GestionJornadas() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );

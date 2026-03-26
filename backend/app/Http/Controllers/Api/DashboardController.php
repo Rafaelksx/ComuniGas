@@ -32,42 +32,81 @@ class DashboardController extends Controller
 
         $jornada = $jornadaQuery->first();
 
-        // Si no se encuentra la solicitada (o no hay activa), devolver vacíos pero con el listado
+        $isAdmin = $user->rol === 'admin_comunidad';
+
+        // Si no se encuentra la solicitada (o no hay activa), devolver vacíos pero con el listado (si es admin)
         if (!$jornada) {
             return response()->json([
                 'jornada' => null,
-                'todas_jornadas' => $todasJornadas,
+                'todas_jornadas' => $isAdmin ? $todasJornadas : [],
                 'stats' => [
                     'total_bs' => 0,
                     'por_tipo' => []
+                ],
+                'is_admin' => $isAdmin,
+                'user' => [
+                    'name' => $user->name,
+                    'rol' => $user->rol
                 ]
             ]);
         }
 
-        // C. Sumar todo el dinero (Bolívares) de los pedidos de esta jornada
-        $totalBs = Pedido::where('jornada_id', $jornada->id)
-            ->sum('total_ves');
+        // Si no es admin, NO calculamos ni exponemos las estadísticas globales
+        if (!$isAdmin) {
+            return response()->json([
+                'jornada' => $jornada,
+                'todas_jornadas' => [],
+                'stats' => [], // Vacío, por seguridad
+                'is_admin' => false,
+                'user' => [
+                    'name' => $user->name,
+                    'rol' => $user->rol
+                ]
+            ]);
+        }
 
-        // D. Contar las bombonas agrupadas por capacidad
+        // C. Estadísticas de la jornada (Sólo Ejecutado si es Admin)
+        $pedidosBase = Pedido::where('jornada_id', $jornada->id);
+        
+        $totalBs = (clone $pedidosBase)->sum('total_ves');
+        $totalUsd = (clone $pedidosBase)->sum('total_usd');
+        $totalPedidos = (clone $pedidosBase)->count();
+        $vecinosAtendidos = (clone $pedidosBase)->distinct('user_id')->count('user_id');
+        
+        $pagosVerificados = (clone $pedidosBase)->where('estado_pago', 'verificado')->count();
+        $entregasCompletadas = (clone $pedidosBase)->where('estado_fisico', 'llena_recibida')->count();
+
+        // D. Contar las bombonas agrupadas por capacidad y marca
         $bombonas = DB::table('detalles_pedidos')
             ->join('pedidos', 'detalles_pedidos.pedido_id', '=', 'pedidos.id')
             ->join('jornada_bombonas', 'detalles_pedidos.jornada_bombona_id', '=', 'jornada_bombonas.id')
             ->where('pedidos.jornada_id', $jornada->id)
-            ->select('jornada_bombonas.capacidad', DB::raw('SUM(detalles_pedidos.cantidad) as total_cantidad'))
-            ->groupBy('jornada_bombonas.capacidad')
+            ->select('jornada_bombonas.capacidad', 'jornada_bombonas.marca', DB::raw('SUM(detalles_pedidos.cantidad) as total_cantidad'))
+            ->groupBy('jornada_bombonas.capacidad', 'jornada_bombonas.marca')
             ->get();
 
         $porTipo = [];
         foreach ($bombonas as $b) {
-            $porTipo[$b->capacidad] = $b->total_cantidad;
+            $nombreCilindro = "{$b->capacidad} - {$b->marca}";
+            $porTipo[$nombreCilindro] = $b->total_cantidad;
         }
 
         // E. Enviar la respuesta al Frontend
         return response()->json([
             'jornada' => $jornada,
             'todas_jornadas' => $todasJornadas,
+            'is_admin' => true,
+            'user' => [
+                'name' => $user->name,
+                'rol' => $user->rol
+            ],
             'stats' => [
                 'total_bs' => $totalBs,
+                'total_usd' => $totalUsd,
+                'total_pedidos' => $totalPedidos,
+                'vecinos_atendidos' => $vecinosAtendidos,
+                'pagos_verificados' => $pagosVerificados,
+                'entregas_completadas' => $entregasCompletadas,
                 'por_tipo' => $porTipo
             ]
         ]);

@@ -147,7 +147,7 @@ export default function FormularioPedido() {
 
     if (error) return (
         <div className="max-w-2xl mx-auto mt-10 p-6 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200 text-center">
-            <div className="text-4xl mb-3">⚠️</div>
+            <svg className="w-12 h-12 mx-auto mb-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             <h2 className="text-xl font-bold mb-2">Operativo Cerrado</h2>
             <p>{error}</p>
         </div>
@@ -158,7 +158,10 @@ export default function FormularioPedido() {
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-gray-800">Solicitar Gas 🛒</h1>
+                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Solicitar Gas
+                </h1>
                 <p className="text-gray-500 mt-1">
                     Operativo activo — Tasa BCV: <strong>{jornada.tasa_bcv_dia} Bs/$</strong>
                 </p>
@@ -260,10 +263,10 @@ export default function FormularioPedido() {
                                         {comprobantePreview ? (
                                             <img src={comprobantePreview} alt="Preview" className="h-full w-full object-contain rounded-xl p-1" />
                                         ) : (
-                                            <div className="text-center">
-                                                <p className="text-3xl">📎</p>
-                                                <p className="text-sm text-gray-500 mt-1">Haz clic para subir imagen</p>
-                                                <p className="text-xs text-gray-400">PNG, JPG — máx. 5MB</p>
+                                            <div className="text-center flex flex-col items-center">
+                                                <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                                <p className="text-sm text-gray-500 mt-1 font-medium">Sube tu capture aquí</p>
+                                                <p className="text-xs text-gray-400 mt-1">PNG, JPG — máx. 5MB</p>
                                             </div>
                                         )}
                                         <input type="file" accept="image/*" className="hidden" onChange={handleComprobanteChange} />
@@ -305,17 +308,23 @@ export default function FormularioPedido() {
                             type="submit"
                             form="form-pedido"
                             disabled={carritoVacio || submitting}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold transition"
+                            className="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold transition focus:ring-4 focus:ring-blue-500/30"
                         >
-                            {submitting ? 'Enviando...' : '✅ Reportar Pago'}
+                            {submitting ? 'Enviando...' : (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Reportar Pago
+                                </>
+                            )}
                         </button>
                     </div>
 
                     {/* Datos de pago del coordinador */}
                     {tieneDatosPago && (
-                        <div className="bg-blue-50 rounded-xl border border-blue-200 p-5">
+                        <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 mt-6">
                             <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                                <span>📲</span> Realiza tu pago aquí
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                Envía tu pago aquí
                             </h3>
                             <div className="space-y-2 text-sm">
                                 {jornada.pago_movil_banco && (
