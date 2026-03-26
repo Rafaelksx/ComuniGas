@@ -4,11 +4,24 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import axiosClient from '@/lib/axios';
 
+import ReporteJornada from './ReporteJornada';
+
 export default function ListaPedidos() {
     const [pedidos, setPedidos] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedComprobante, setSelectedComprobante] = useState(null);
+    const [jornadaImprimir, setJornadaImprimir] = useState(null);
+
+    const handlePrint = (jornadaId) => {
+        setJornadaImprimir(jornadaId);
+        // Damos un breve timeout para que React renderice el componente en el DOM antes de imprimir
+        setTimeout(() => {
+            window.print();
+            // Despues de enviar a imprimir, limpiamos
+            setTimeout(() => setJornadaImprimir(null), 1000);
+        }, 150);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,10 +100,26 @@ export default function ListaPedidos() {
                                     {grupo.jornada?.estado.replace('_', ' ')}
                                 </span>
                             </div>
-                            <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded shadow-sm">
-                                {grupo.pedidos.length} pedido(s)
+                            <div className="flex items-center gap-3">
+                                {isAdmin && (
+                                    <button 
+                                        onClick={() => handlePrint(grupo.jornada?.id || 'sin-jornada')}
+                                        className="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all focus:ring-2 focus:ring-indigo-300 flex items-center gap-1.5 print:hidden"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                        Imprimir Reporte
+                                    </button>
+                                )}
+                                <div className="text-sm text-gray-600 bg-white px-3 py-1.5 rounded-lg shadow-sm font-medium border border-gray-100">
+                                    {grupo.pedidos.length} pedido(s)
+                                </div>
                             </div>
                         </div>
+
+                        {/* Renderizar área de impresión solo si es la jornada activa para imprimir */}
+                        {jornadaImprimir === (grupo.jornada?.id || 'sin-jornada') && (
+                            <ReporteJornada jornada={grupo.jornada} pedidos={grupo.pedidos} />
+                        )}
 
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
