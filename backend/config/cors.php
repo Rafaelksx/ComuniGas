@@ -16,14 +16,12 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    // Allowed HTTP methods for CORS requests
     'allowed_methods' => ['*'],
 
-    // Exact origin match (without trailing slash). Must match exactly.
+    // La URL del frontend sin barra al final. Configurar en Render sin trailing slash.
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
-    // Pattern matching to also accept URL with or without trailing slash.
-    'allowed_origins_patterns' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins_patterns' => [],
 
     // Allowed headers that can be sent in the request
     'allowed_headers' => ['*'],
