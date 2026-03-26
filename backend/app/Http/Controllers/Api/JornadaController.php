@@ -10,12 +10,19 @@ use Illuminate\Support\Facades\DB;
 class JornadaController extends Controller
 {
     /**
-     * Devuelve la lista de jornadas (Pronto la filtraremos por comunidad)
+     * Devuelve la lista de jornadas filtrada por comunidad
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Traemos las jornadas con sus lotes de bombonas incluidos
-        $jornadas = Jornada::with('lotes')->orderBy('created_at', 'desc')->get();
+        $user = $request->user();
+
+        $query = Jornada::with('lotes')->orderBy('created_at', 'desc');
+
+        if ($user && $user->comunidad_id) {
+            $query->where('comunidad_id', $user->comunidad_id);
+        }
+
+        $jornadas = $query->get();
         
         return response()->json($jornadas);
     }
