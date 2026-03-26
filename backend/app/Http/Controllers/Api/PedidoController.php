@@ -72,8 +72,16 @@ class PedidoController extends Controller
             // 1. Guardar comprobante si viene
             $comprobantePath = null;
             if ($request->hasFile('comprobante')) {
-                $comprobantePath = $request->file('comprobante')
-                    ->store('comprobantes', 'public');
+                if (env('CLOUDINARY_URL')) {
+                    // Sube a Cloudinary si está configurado para producción
+                    $comprobantePath = cloudinary()->upload($request->file('comprobante')->getRealPath(), [
+                        'folder' => 'comunigas_comprobantes'
+                    ])->getSecurePath();
+                } else {
+                    // Guarda localmente
+                    $comprobantePath = $request->file('comprobante')
+                        ->store('comprobantes', 'public');
+                }
             }
 
             // 2. Crear el Pedido

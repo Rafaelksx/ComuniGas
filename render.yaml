@@ -1,0 +1,58 @@
+# render.yaml
+# Manifiesto de Despliegue de ComuniGas para Render (Backend + Database)
+# Vercel será configurado desde su propia plataforma apuntando a la carpeta /frontend
+
+services:
+  - type: web
+    name: comunigas-api
+    env: php
+    rootDir: backend
+    buildCommand: 'composer install -n --prefer-dist --optimize-autoloader && php artisan config:cache && php artisan migrate --force'
+    startCommand: 'php artisan serve --host=0.0.0.0 --port=$PORT'
+    envVars:
+      - key: APP_NAME
+        value: ComuniGas
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://comunigas-api.onrender.com # Modificar si cambias el nombre
+      - key: FRONTEND_URL
+        sync: false # Debes poner la URL que te dé Vercel (ej. https://comunigas.vercel.app)
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false # Poner dominio de vercel sin https:// (ej. comunigas.vercel.app)
+      - key: SESSION_DOMAIN
+        sync: false # Poner punto y dominio de vercel (ej. .vercel.app)
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: comunigas-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: comunigas-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: comunigas-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: comunigas-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: comunigas-db
+          property: password
+      - key: CLOUDINARY_URL
+        sync: false # Coloca aquí tu API Key cuando te registres: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+
+databases:
+  - name: comunigas-db
+    databaseName: comunigas
+    user: comunigas_user
+    plan: free
