@@ -21,14 +21,13 @@ class VecinoController extends Controller
         return response()->json($vecinos);
     }
 
-    // El admin corrige el número de casa de un vecino
     public function update(Request $request, $id)
     {
         $request->validate([
             'identificador_vivienda' => 'required|string|max:50',
         ]);
 
-        $vecino = User::findOrFail($id);
+        $vecino = User::where('id', $id)->where('comunidad_id', $request->user()->comunidad_id)->firstOrFail();
         $vecino->identificador_vivienda = $request->identificador_vivienda;
         $vecino->save();
 

@@ -100,7 +100,9 @@ class JornadaController extends Controller
     
     public function update(Request $request, $id)
     {
-        $jornada = Jornada::findOrFail($id);
+        $jornada = Jornada::where('id', $id)
+            ->where('comunidad_id', $request->user()->comunidad_id)
+            ->firstOrFail();
 
         $validated = $request->validate([
             'tasa_bcv_dia' => 'required|numeric|min:0',
@@ -128,9 +130,11 @@ class JornadaController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $jornada = Jornada::findOrFail($id);
+        $jornada = Jornada::where('id', $id)
+            ->where('comunidad_id', $request->user()->comunidad_id)
+            ->firstOrFail();
 
         // Verificar si tiene pedidos asociados
         $tienePedidos = \App\Models\Pedido::where('jornada_id', $id)->exists();
@@ -152,7 +156,9 @@ class JornadaController extends Controller
 
     public function updateEstatus(Request $request, $id)
     {
-        $jornada = Jornada::findOrFail($id);
+        $jornada = Jornada::where('id', $id)
+            ->where('comunidad_id', $request->user()->comunidad_id)
+            ->firstOrFail();
         
         $validated = $request->validate([
             'estado' => 'required|in:abierta,en_proceso,finalizada,cancelada',

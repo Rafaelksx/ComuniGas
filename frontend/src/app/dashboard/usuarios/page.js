@@ -1,18 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axiosClient from '@/lib/axios';
 import { toast } from 'react-hot-toast';
 
 export default function UsuariosPage() {
+    const router = useRouter();
     const [usuarios, setUsuarios] = useState([]);
     const [comunidades, setComunidades] = useState([]);
     const [loading, setLoading] = useState(true);
     const [edits, setEdits] = useState({});
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        axiosClient.get('/user').then(res => {
+            if (res.data?.rol !== 'superadmin') {
+                router.replace('/dashboard');
+            } else {
+                fetchData();
+            }
+        }).catch(() => router.replace('/login'));
+    }, [router]);
 
     const fetchData = async () => {
         try {

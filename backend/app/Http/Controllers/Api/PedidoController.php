@@ -46,7 +46,9 @@ class PedidoController extends Controller
             'comprobante'      => 'nullable|image|max:5120',
         ]);
 
-        $jornada = \App\Models\Jornada::findOrFail($request->jornada_id);
+        $jornada = \App\Models\Jornada::where('id', $request->jornada_id)
+            ->where('comunidad_id', $request->user()->comunidad_id)
+            ->firstOrFail();
 
         // Calcular totales en el backend
         $totalUsd = 0;
@@ -129,7 +131,9 @@ class PedidoController extends Controller
 
     public function verificarPago(Request $request, $id)
     {
-        $pedido = Pedido::findOrFail($id);
+        $pedido = Pedido::whereHas('user', function($query) use ($request) {
+            $query->where('comunidad_id', $request->user()->comunidad_id);
+        })->findOrFail($id);
         $pedido->estado_pago = 'verificado';
         if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'aprobado']);
@@ -141,7 +145,9 @@ class PedidoController extends Controller
 
     public function entregar(Request $request, $id)
     {
-        $pedido = Pedido::findOrFail($id);
+        $pedido = Pedido::whereHas('user', function($query) use ($request) {
+            $query->where('comunidad_id', $request->user()->comunidad_id);
+        })->findOrFail($id);
         $pedido->estado_fisico = 'llena_recibida';
         $pedido->save();
 
@@ -150,7 +156,9 @@ class PedidoController extends Controller
 
     public function rechazarPago(Request $request, $id)
     {
-        $pedido = Pedido::findOrFail($id);
+        $pedido = Pedido::whereHas('user', function($query) use ($request) {
+            $query->where('comunidad_id', $request->user()->comunidad_id);
+        })->findOrFail($id);
         $pedido->estado_pago = 'rechazado';
         if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'rechazado']);
@@ -162,7 +170,9 @@ class PedidoController extends Controller
 
     public function recibirVacia(Request $request, $id)
     {
-        $pedido = Pedido::findOrFail($id);
+        $pedido = Pedido::whereHas('user', function($query) use ($request) {
+            $query->where('comunidad_id', $request->user()->comunidad_id);
+        })->findOrFail($id);
         $pedido->estado_fisico = 'vacia_entregada';
         $pedido->save();
 

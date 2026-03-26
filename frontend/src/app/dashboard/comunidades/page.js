@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axiosClient from '@/lib/axios';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
 
 export default function ComunidadesPage() {
+    const router = useRouter();
     const [comunidades, setComunidades] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,8 +16,14 @@ export default function ComunidadesPage() {
     const [confirmConfig, setConfirmConfig] = useState(null);
 
     useEffect(() => {
-        fetchComunidades();
-    }, []);
+        axiosClient.get('/user').then(res => {
+            if (res.data?.rol !== 'superadmin') {
+                router.replace('/dashboard');
+            } else {
+                fetchComunidades();
+            }
+        }).catch(() => router.replace('/login'));
+    }, [router]);
 
     const fetchComunidades = async () => {
         try {
