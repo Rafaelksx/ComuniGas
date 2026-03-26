@@ -23,35 +23,45 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($catalogo as $item) {
-            TipoBombona::create($item);
+            TipoBombona::firstOrCreate(
+                ['marca' => $item['marca'], 'capacidad' => $item['capacidad']],
+                ['precio_usd' => $item['precio_usd']]
+            );
         }
 
         // 2. Crear al Superadmin (Tú)
-        User::factory()->create([
-            'name' => 'Super Administrador',
-            'email' => 'superadmin@comunigas.com',
-            'password' => '12345678',
-            'rol' => 'superadmin',
-            'comunidad_id' => null, // El superadmin no se ata a una sola comunidad
-        ]);
+        User::firstOrCreate(
+            ['email' => 'superadmin@comunigas.com'],
+            [
+                'name' => 'Super Administrador',
+                'telefono' => '04241234567',
+                'password' => bcrypt('12345678'),
+                'rol' => 'superadmin',
+                'comunidad_id' => null,
+            ]
+        );
 
         // 3. Crear una Comunidad de Prueba
-        $comunidad = Comunidad::create([
-            'nombre' => 'Residencias Alta Vista Sur',
-            'direccion' => 'Carrera Nekuima, Torre A',
-            'activa' => true,
-        ]);
+        $comunidad = Comunidad::firstOrCreate(
+            ['nombre' => 'Residencias Alta Vista Sur'],
+            [
+                'direccion' => 'Carrera Nekuima, Torre A',
+                'activa' => true,
+            ]
+        );
 
         // 4. Crear al Coordinador de esa comunidad
-        User::factory()->create([
-            'name' => 'Carlos Coordinador',
-            'email' => 'admin@altavista.com',
-            'telefono' => '04141234567',
-            'password' => '12345678',
-            'rol' => 'admin_comunidad',
-            'identificador_vivienda' => 'Torre A - P.B.',
-            'comunidad_id' => $comunidad->id,
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@altavista.com'],
+            [
+                'name' => 'Carlos Coordinador',
+                'telefono' => '04141234567',
+                'password' => bcrypt('12345678'),
+                'rol' => 'admin_comunidad',
+                'identificador_vivienda' => 'Torre A - P.B.',
+                'comunidad_id' => $comunidad->id,
+            ]
+        );
 
         // 5. Crear 10 Vecinos aleatorios para esa comunidad
         User::factory(10)->create([

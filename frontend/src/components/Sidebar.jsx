@@ -45,7 +45,7 @@ export default function Sidebar({ user }) {
 
             <nav className="flex-1 p-4 space-y-2">
                 {currentMenu.map((item) => {
-                    const isActive = pathname === item.path || (pathname.startsWith(item.path) && item.path !== '/dashboard');
+                    const isActive = pathname === item.path;
                     return (
                         <Link
                             key={item.path}

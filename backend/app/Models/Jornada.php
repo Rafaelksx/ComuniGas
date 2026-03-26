@@ -15,7 +15,11 @@ class Jornada extends Model
         'tasa_bcv_dia',
         'fecha_apertura',
         'fecha_cierre_pagos',
-        'estado'
+        'estado',
+        'pago_movil_banco',
+        'pago_movil_telefono',
+        'pago_movil_cedula',
+        'pago_movil_nombre',
     ];
 
     // La jornada le pertenece a una comunidad

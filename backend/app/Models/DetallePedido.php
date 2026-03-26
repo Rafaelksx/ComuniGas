@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class DetallePedido extends Model
 {
     use HasFactory;
+    protected $table = 'detalles_pedidos';
 
     protected $fillable = [
         'pedido_id',
         'jornada_bombona_id',
         'cantidad',
-        'precio_unitario'
+        'precio_unitario_usd'
     ];
 
     // Este detalle pertenece a una factura/pedido general

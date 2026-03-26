@@ -7,6 +7,7 @@ use App\Models\Pedido;
 use App\Models\JornadaBombona;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PedidoController extends Controller
 {
@@ -34,41 +35,75 @@ class PedidoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'jornada_id' => 'required|exists:jornadas,id',
-            'lote_id' => 'required|exists:jornada_bombonas,id',
-            'referencia_pago' => 'required|string',
-            'monto_bs' => 'required|numeric',
+            'jornada_id'       => 'required|exists:jornadas,id',
+            'items'            => 'required|array|min:1',
+            'items.*.lote_id'  => 'required|exists:jornada_bombonas,id',
+            'items.*.cantidad' => 'required|integer|min:1|max:10',
+            'referencia_pago'  => 'required|string|max:50',
+            'banco_origen'     => 'required|string|max:100',
+            'telefono_pago'    => 'required|string|max:20',
+            'monto_bs_vecino'  => 'nullable|numeric',
+            'comprobante'      => 'nullable|image|max:5120',
         ]);
 
-        $lote = JornadaBombona::findOrFail($request->lote_id);
+        $jornada = \App\Models\Jornada::findOrFail($request->jornada_id);
+
+        // Calcular totales en el backend
+        $totalUsd = 0;
+        $totalVes = 0;
+        $lotesData = [];
+
+        foreach ($request->items as $item) {
+            $lote = JornadaBombona::findOrFail($item['lote_id']);
+            $cantidad = (int) $item['cantidad'];
+            $subtotalUsd = $lote->precio_usd * $cantidad;
+            $subtotalVes = round($subtotalUsd * $jornada->tasa_bcv_dia, 2);
+            $totalUsd += $subtotalUsd;
+            $totalVes += $subtotalVes;
+            $lotesData[] = [
+                'lote'     => $lote,
+                'cantidad' => $cantidad,
+            ];
+        }
 
         DB::beginTransaction();
 
         try {
-            // 1. Crear el Pedido (Factura Principal)
+            // 1. Guardar comprobante si viene
+            $comprobantePath = null;
+            if ($request->hasFile('comprobante')) {
+                $comprobantePath = $request->file('comprobante')
+                    ->store('comprobantes', 'public');
+            }
+
+            // 2. Crear el Pedido
             $pedido = Pedido::create([
-                'user_id' => $request->user()->id,
-                'jornada_id' => $request->jornada_id,
-                'total_usd' => $lote->precio_usd,
-                'total_ves' => $request->monto_bs,
-                'estado_pago' => 'por_verificar',
+                'user_id'       => $request->user()->id,
+                'jornada_id'    => $request->jornada_id,
+                'total_usd'     => round($totalUsd, 2),
+                'total_ves'     => round($totalVes, 2),
+                'estado_pago'   => 'por_verificar',
                 'estado_fisico' => 'pendiente_entregar_vacia',
             ]);
 
-            // 2. Crear el Detalle (Usando precio_unitario_usd)
-            $pedido->detalles()->create([
-                'jornada_bombona_id' => $lote->id,
-                'cantidad' => 1,
-                'precio_unitario_usd' => $lote->precio_usd,
-            ]);
+            // 3. Crear los Detalles (uno por tipo de cilindro)
+            foreach ($lotesData as $item) {
+                $pedido->detalles()->create([
+                    'jornada_bombona_id'  => $item['lote']->id,
+                    'cantidad'            => $item['cantidad'],
+                    'precio_unitario_usd' => $item['lote']->precio_usd,
+                ]);
+            }
 
-            // 3. Registrar el Pago (Usando referencia y monto_ves)
+            // 4. Registrar el Pago
             $pedido->pagos()->create([
-                'metodo_pago' => 'pago_movil',
-                'referencia' => $request->referencia_pago,
-                'monto_ves' => $request->monto_bs,
-                'fecha_pago' => now(),
-                'estado' => 'pendiente_revision'
+                'metodo_pago'      => 'pago_movil',
+                'banco_origen'     => $request->banco_origen,
+                'referencia'       => $request->referencia_pago,
+                'monto_ves'        => $request->monto_bs_vecino ?? round($totalVes, 2),
+                'fecha_pago'       => now(),
+                'estado'           => 'pendiente_revision',
+                'comprobante_path' => $comprobantePath,
             ]);
 
             DB::commit();
@@ -79,7 +114,7 @@ class PedidoController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Error al registrar el pedido.',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
@@ -88,8 +123,7 @@ class PedidoController extends Controller
     {
         $pedido = Pedido::findOrFail($id);
         $pedido->estado_pago = 'verificado';
-        // También actualizamos el pago asociado
-        if($pedido->pagos()->exists()){
+        if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'aprobado']);
         }
         $pedido->save();
@@ -105,13 +139,12 @@ class PedidoController extends Controller
 
         return response()->json(['message' => 'Bombona marcada como entregada.']);
     }
-    
+
     public function rechazarPago(Request $request, $id)
     {
         $pedido = Pedido::findOrFail($id);
         $pedido->estado_pago = 'rechazado';
-        
-        if($pedido->pagos()->exists()){
+        if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'rechazado']);
         }
         $pedido->save();
@@ -122,7 +155,7 @@ class PedidoController extends Controller
     public function recibirVacia(Request $request, $id)
     {
         $pedido = Pedido::findOrFail($id);
-        $pedido->estado_fisico = 'vacia_entregada'; // Cambiamos el estado físico
+        $pedido->estado_fisico = 'vacia_entregada';
         $pedido->save();
 
         return response()->json(['message' => 'Cilindro vacío recibido por el coordinador.']);

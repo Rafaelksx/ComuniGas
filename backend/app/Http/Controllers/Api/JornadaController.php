@@ -30,8 +30,12 @@ class JornadaController extends Controller
             'comunidad_id' => 'required|exists:comunidades,id',
             'tasa_bcv_dia' => 'required|numeric|min:0',
             'fecha_apertura' => 'required|date',
-            'fecha_cierre_pagos' => 'required|date|after_or_equal:fecha_apertura',
-            'estado' => 'nullable|in:abierta,recepcion_cilindros,en_planta,finalizada',
+            'fecha_cierre_pagos' => 'nullable|date|after_or_equal:fecha_apertura',
+            'estado' => 'nullable|in:abierta,en_proceso,finalizada,cancelada',
+            'pago_movil_banco' => 'nullable|string|max:100',
+            'pago_movil_telefono' => 'nullable|string|max:20',
+            'pago_movil_cedula' => 'nullable|string|max:15',
+            'pago_movil_nombre' => 'nullable|string|max:150',
             
             // Validar el arreglo de lotes (Las bombonas que vendrán en el camión)
             'lotes' => 'required|array|min:1',
@@ -51,6 +55,10 @@ class JornadaController extends Controller
                 'fecha_apertura' => $validated['fecha_apertura'],
                 'fecha_cierre_pagos' => $validated['fecha_cierre_pagos'],
                 'estado' => $validated['estado'] ?? 'abierta',
+                'pago_movil_banco' => $validated['pago_movil_banco'] ?? null,
+                'pago_movil_telefono' => $validated['pago_movil_telefono'] ?? null,
+                'pago_movil_cedula' => $validated['pago_movil_cedula'] ?? null,
+                'pago_movil_nombre' => $validated['pago_movil_nombre'] ?? null,
             ]);
 
             // B. Crear cada lote de bombonas asociado a esta jornada
@@ -91,12 +99,20 @@ class JornadaController extends Controller
             'tasa_bcv_dia' => 'required|numeric|min:0',
             'fecha_apertura' => 'required|date',
             'fecha_cierre_pagos' => 'required|date|after_or_equal:fecha_apertura',
+            'pago_movil_banco' => 'nullable|string|max:100',
+            'pago_movil_telefono' => 'nullable|string|max:20',
+            'pago_movil_cedula' => 'nullable|string|max:15',
+            'pago_movil_nombre' => 'nullable|string|max:150',
         ]);
 
         $jornada->update([
             'tasa_bcv_dia' => $validated['tasa_bcv_dia'],
             'fecha_apertura' => $validated['fecha_apertura'],
             'fecha_cierre_pagos' => $validated['fecha_cierre_pagos'],
+            'pago_movil_banco' => $validated['pago_movil_banco'] ?? $jornada->pago_movil_banco,
+            'pago_movil_telefono' => $validated['pago_movil_telefono'] ?? $jornada->pago_movil_telefono,
+            'pago_movil_cedula' => $validated['pago_movil_cedula'] ?? $jornada->pago_movil_cedula,
+            'pago_movil_nombre' => $validated['pago_movil_nombre'] ?? $jornada->pago_movil_nombre,
         ]);
 
         return response()->json([
@@ -132,7 +148,7 @@ class JornadaController extends Controller
         $jornada = Jornada::findOrFail($id);
         
         $validated = $request->validate([
-            'estado' => 'required|in:abierta,recepcion_cilindros,en_planta,distribucion,finalizada,cancelada',
+            'estado' => 'required|in:abierta,en_proceso,finalizada,cancelada',
         ]);
 
         $jornada->update([

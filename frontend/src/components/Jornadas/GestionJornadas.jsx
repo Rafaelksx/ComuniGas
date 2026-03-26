@@ -15,6 +15,10 @@ export default function GestionJornadas() {
         tasa_bcv_dia: '',
         fecha_apertura: '',
         fecha_cierre_pagos: '',
+        pago_movil_banco: '',
+        pago_movil_telefono: '',
+        pago_movil_cedula: '',
+        pago_movil_nombre: '',
         lotes: [{ capacidad: '10kg', marca: 'Bolívar Gas', precio_usd: '' }]
     });
 
@@ -60,6 +64,10 @@ export default function GestionJornadas() {
                 tasa_bcv_dia: formData.tasa_bcv_dia,
                 fecha_apertura: formData.fecha_apertura.replace('T', ' ') + ':00',
                 fecha_cierre_pagos: formData.fecha_cierre_pagos.replace('T', ' ') + ':00',
+                pago_movil_banco: formData.pago_movil_banco || null,
+                pago_movil_telefono: formData.pago_movil_telefono || null,
+                pago_movil_cedula: formData.pago_movil_cedula || null,
+                pago_movil_nombre: formData.pago_movil_nombre || null,
             };
 
             if (editId) {
@@ -82,6 +90,10 @@ export default function GestionJornadas() {
                 tasa_bcv_dia: '',
                 fecha_apertura: '',
                 fecha_cierre_pagos: '',
+                pago_movil_banco: '',
+                pago_movil_telefono: '',
+                pago_movil_cedula: '',
+                pago_movil_nombre: '',
                 lotes: [{ capacidad: '10kg', marca: 'Bolívar Gas', precio_usd: '' }]
             });
         } catch (error) {
@@ -97,6 +109,10 @@ export default function GestionJornadas() {
             tasa_bcv_dia: jornada.tasa_bcv_dia,
             fecha_apertura: formatD(jornada.fecha_apertura),
             fecha_cierre_pagos: formatD(jornada.fecha_cierre_pagos),
+            pago_movil_banco: jornada.pago_movil_banco || '',
+            pago_movil_telefono: jornada.pago_movil_telefono || '',
+            pago_movil_cedula: jornada.pago_movil_cedula || '',
+            pago_movil_nombre: jornada.pago_movil_nombre || '',
             lotes: jornada.lotes || []
         });
         setShowForm(true);
@@ -121,6 +137,30 @@ export default function GestionJornadas() {
             alert('Jornada cancelada.');
         } catch (error) {
             alert(error.response?.data?.message || 'Error al cancelar la jornada.');
+        }
+    };
+
+    const handleAvanzarEtapa = async (jornada) => {
+        const flujo = {
+            'abierta': 'en_proceso',
+            'en_proceso': 'finalizada'
+        };
+        const mensajes = {
+            'abierta': '¿Cerrar recepción de pagos y pasar a En Proceso?\n\n(Los vecinos ya no podrán hacer pedidos, y podrás empezar a controlar qué cilindros han sido despachados)',
+            'en_proceso': '¿Finalizar el operativo completamente?\n\n(Asegúrate de haber despachado todos los cilindros primero)'
+        };
+
+        const siguienteEstado = flujo[jornada.estado];
+        if (!siguienteEstado) return;
+
+        if (!window.confirm(mensajes[jornada.estado])) return;
+
+        try {
+            const res = await axiosClient.patch(`/jornadas/${jornada.id}/estatus`, { estado: siguienteEstado });
+            setJornadas(jornadas.map(j => j.id === jornada.id ? res.data.jornada : j));
+            alert(`Jornada avanzada a: ${siguienteEstado.replace('_', ' ')}`);
+        } catch (error) {
+            alert(error.response?.data?.message || 'Error al actualizar el estado.');
         }
     };
 
@@ -241,6 +281,43 @@ export default function GestionJornadas() {
                         </div>
                     )}
 
+                    {/* DATOS DE PAGO MÓVIL */}
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                            <span>📲</span> Datos de Pago Móvil (para los vecinos)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Banco receptor</label>
+                                <input type="text" placeholder="Ej: Banco de Venezuela"
+                                    value={formData.pago_movil_banco}
+                                    onChange={(e) => setFormData({ ...formData, pago_movil_banco: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono receptor</label>
+                                <input type="tel" placeholder="Ej: 04141234567"
+                                    value={formData.pago_movil_telefono}
+                                    onChange={(e) => setFormData({ ...formData, pago_movil_telefono: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Cédula del titular</label>
+                                <input type="text" placeholder="Ej: V-12345678"
+                                    value={formData.pago_movil_cedula}
+                                    onChange={(e) => setFormData({ ...formData, pago_movil_cedula: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del titular</label>
+                                <input type="text" placeholder="Ej: María González"
+                                    value={formData.pago_movil_nombre}
+                                    onChange={(e) => setFormData({ ...formData, pago_movil_nombre: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex justify-end pt-4">
                         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold">
                             {editId ? 'Guardar Cambios' : 'Guardar y Abrir Jornada'}
@@ -291,6 +368,18 @@ export default function GestionJornadas() {
                                         <button onClick={() => handleEdit(jornada)} className="text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded">
                                             Editar
                                         </button>
+                                        
+                                        {jornada.estado === 'abierta' && (
+                                            <button onClick={() => handleAvanzarEtapa(jornada)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded">
+                                                Cerrar Recepción
+                                            </button>
+                                        )}
+                                        {jornada.estado === 'en_proceso' && (
+                                            <button onClick={() => handleAvanzarEtapa(jornada)} className="text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded">
+                                                Finalizar Jornada
+                                            </button>
+                                        )}
+
                                         {jornada.estado !== 'cancelada' && jornada.estado !== 'finalizada' && (
                                             <button onClick={() => handleCancelJornada(jornada.id)} className="text-yellow-600 hover:text-yellow-900 bg-yellow-50 px-2 py-1 rounded">
                                                 Cancelar

@@ -14,17 +14,29 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // 1. Buscar si hay una jornada abierta en la comunidad de este usuario
-        $jornada = Jornada::with('lotes')
-            ->where('comunidad_id', $user->comunidad_id)
-            ->where('estado', 'abierta')
-            ->latest()
-            ->first();
+        // A. Obtener todas las jornadas de la comunidad para el selector del frontend
+        $todasJornadas = Jornada::where('comunidad_id', $user->comunidad_id)
+            ->orderBy('fecha_apertura', 'desc')
+            ->get(['id', 'fecha_apertura', 'estado']);
 
-        // Si no hay jornada, devolvemos todo en cero
+        // B. Determinar qué jornada mostrar
+        $jornadaQuery = Jornada::with('lotes')
+            ->where('comunidad_id', $user->comunidad_id);
+
+        if ($request->has('jornada_id') && $request->jornada_id != 'actual') {
+            $jornadaQuery->where('id', $request->jornada_id);
+        } else {
+            // Si no envían ID, buscamos la que esté abierta o en proceso
+            $jornadaQuery->whereIn('estado', ['abierta', 'en_proceso'])->latest();
+        }
+
+        $jornada = $jornadaQuery->first();
+
+        // Si no se encuentra la solicitada (o no hay activa), devolver vacíos pero con el listado
         if (!$jornada) {
             return response()->json([
                 'jornada' => null,
+                'todas_jornadas' => $todasJornadas,
                 'stats' => [
                     'total_bs' => 0,
                     'por_tipo' => []
@@ -32,12 +44,11 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 2. Sumar todo el dinero (Bolívares) de los pedidos de esta jornada
+        // C. Sumar todo el dinero (Bolívares) de los pedidos de esta jornada
         $totalBs = Pedido::where('jornada_id', $jornada->id)
             ->sum('total_ves');
 
-        // 3. Contar las bombonas agrupadas por capacidad (10kg, 18kg, etc.)
-        // Usamos DB::table para hacer un "Join" rápido y sumar las cantidades
+        // D. Contar las bombonas agrupadas por capacidad
         $bombonas = DB::table('detalles_pedidos')
             ->join('pedidos', 'detalles_pedidos.pedido_id', '=', 'pedidos.id')
             ->join('jornada_bombonas', 'detalles_pedidos.jornada_bombona_id', '=', 'jornada_bombonas.id')
@@ -46,15 +57,15 @@ class DashboardController extends Controller
             ->groupBy('jornada_bombonas.capacidad')
             ->get();
 
-        // Convertir el resultado a un formato fácil para React: {"10kg": 5, "18kg": 2}
         $porTipo = [];
         foreach ($bombonas as $b) {
             $porTipo[$b->capacidad] = $b->total_cantidad;
         }
 
-        // 4. Enviar la respuesta al Frontend
+        // E. Enviar la respuesta al Frontend
         return response()->json([
             'jornada' => $jornada,
+            'todas_jornadas' => $todasJornadas,
             'stats' => [
                 'total_bs' => $totalBs,
                 'por_tipo' => $porTipo

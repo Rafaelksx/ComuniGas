@@ -1,0 +1,51 @@
+🐳 1. Docker y Laravel Sail (El Motor del Backend)
+Asegúrate de estar dentro de la carpeta backend en tu terminal de WSL para ejecutar estos:
+
+Levantar los contenedores (modo silencioso):
+./vendor/bin/sail up -d
+
+Apagar los contenedores:
+./vendor/bin/sail down
+
+Apagar y destruir volúmenes (El botón del pánico):
+./vendor/bin/sail down -v
+(Úsalo si la base de datos se corrompe o Docker te da el error de "not a directory" que vimos hace rato).
+
+Ver los logs (si el backend falla y no sabes por qué):
+./vendor/bin/sail logs -f
+
+🗄️ 2. Base de Datos y Migraciones
+También desde la carpeta backend usando Sail:
+
+Ejecutar migraciones nuevas (sin borrar datos):
+./vendor/bin/sail artisan migrate
+
+Borrón y cuenta nueva (Destruye y recrea tablas):
+./vendor/bin/sail artisan migrate:fresh
+
+Borrón, cuenta nueva + Sembrar datos iniciales (El que más usamos):
+./vendor/bin/sail artisan migrate:fresh --seed
+
+Ejecutar solo el sembrador (Seeder):
+./vendor/bin/sail artisan db:seed
+
+💻 3. Consola Interactiva (Tinker)
+Para probar código PHP, crear usuarios o consultar la BD en vivo:
+
+Entrar a Tinker:
+./vendor/bin/sail artisan tinker
+
+Salir de Tinker:
+Escribe exit y presiona Enter.
+
+🎨 4. Frontend (Next.js)
+Asegúrate de estar dentro de la carpeta frontend en otra pestaña de tu terminal:
+
+Levantar el servidor de desarrollo:
+pnpm dev
+
+Instalar una nueva librería:
+pnpm install <nombre-del-paquete>
+
+Limpiar la caché de Next.js (si te da errores de rutas fantasma en Windows):
+rmdir /s /q .next (En la terminal de Windows) o rm -rf .next (En la terminal de WSL/Git Bash).
