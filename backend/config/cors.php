@@ -19,9 +19,9 @@ return [
     'allowed_methods' => ['*'],
 
     // La URL del frontend sin barra al final. Configurar en Render sin trailing slash.
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
-    'allowed_origins_patterns' => ['.*'],
+    'allowed_origins_patterns' => [],
 
     // Allowed headers that can be sent in the request
     'allowed_headers' => ['*'],
