@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import axiosClient from '@/lib/axios';
+import { toast } from 'react-hot-toast';
+import ConfirmModal from '../ConfirmModal';
 
 export default function GestionJornadas() {
     const [jornadas, setJornadas] = useState([]);
@@ -21,6 +23,8 @@ export default function GestionJornadas() {
         pago_movil_nombre: '',
         lotes: [{ capacidad: '10kg', marca: 'Bolívar Gas', precio_usd: '' }]
     });
+
+    const [confirmConfig, setConfirmConfig] = useState(null);
 
     useEffect(() => {
         const initData = async () => {
@@ -74,14 +78,14 @@ export default function GestionJornadas() {
                 // Editar
                 const response = await axiosClient.put(`/jornadas/${editId}`, payload);
                 setJornadas(jornadas.map(j => j.id === editId ? response.data.jornada : j));
-                alert('¡Jornada actualizada con éxito!');
+                toast.success('¡Jornada actualizada con éxito!');
             } else {
                 // Crear
                 payload.comunidad_id = user.comunidad_id;
                 payload.lotes = formData.lotes;
                 const response = await axiosClient.post('/jornadas', payload);
                 setJornadas([response.data.jornada, ...jornadas]);
-                alert('¡Jornada creada con éxito!');
+                toast.success('¡Jornada creada con éxito!');
             }
 
             setShowForm(false);
@@ -98,7 +102,7 @@ export default function GestionJornadas() {
             });
         } catch (error) {
             console.error('Error guardando jornada:', error.response?.data || error.message);
-            alert('Ocurrió un error al guardar la jornada. Revisa la consola.');
+            toast.error(error.response?.data?.message || 'Ocurrió un error al guardar la jornada.');
         }
     };
 
@@ -118,29 +122,47 @@ export default function GestionJornadas() {
         setShowForm(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Seguro que deseas eliminar esta jornada? Esta acción no se puede deshacer.')) return;
-        try {
-            await axiosClient.delete(`/jornadas/${id}`);
-            setJornadas(jornadas.filter(j => j.id !== id));
-            alert('Jornada eliminada.');
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al eliminar la jornada.');
-        }
+    const handleDelete = (id) => {
+        setConfirmConfig({
+            title: 'Eliminar Jornada',
+            message: '¿Seguro que deseas eliminar esta jornada? Esta acción no se puede deshacer.',
+            isDestructive: true,
+            confirmText: 'Eliminar',
+            action: async () => {
+                try {
+                    await axiosClient.delete(`/jornadas/${id}`);
+                    setJornadas(prev => prev.filter(j => j.id !== id));
+                    toast.success('Jornada eliminada.');
+                } catch (error) {
+                    toast.error(error.response?.data?.message || 'Error al eliminar la jornada.');
+                } finally {
+                    setConfirmConfig(null);
+                }
+            }
+        });
     };
 
-    const handleCancelJornada = async (id) => {
-        if (!window.confirm('¿Seguro que deseas cancelar esta jornada? Los pedidos registrados se mantendrán para futuras referencias.')) return;
-        try {
-            const res = await axiosClient.patch(`/jornadas/${id}/estatus`, { estado: 'cancelada' });
-            setJornadas(jornadas.map(j => j.id === id ? res.data.jornada : j));
-            alert('Jornada cancelada.');
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al cancelar la jornada.');
-        }
+    const handleCancelJornada = (id) => {
+        setConfirmConfig({
+            title: 'Cancelar Jornada',
+            message: '¿Seguro que deseas cancelar esta jornada? Los pedidos registrados se mantendrán para futuras referencias.',
+            isDestructive: true,
+            confirmText: 'Sí, cancelar',
+            action: async () => {
+                try {
+                    const res = await axiosClient.patch(`/jornadas/${id}/estatus`, { estado: 'cancelada' });
+                    setJornadas(prev => prev.map(j => j.id === id ? res.data.jornada : j));
+                    toast.success('Jornada cancelada.');
+                } catch (error) {
+                    toast.error(error.response?.data?.message || 'Error al cancelar la jornada.');
+                } finally {
+                    setConfirmConfig(null);
+                }
+            }
+        });
     };
 
-    const handleAvanzarEtapa = async (jornada) => {
+    const handleAvanzarEtapa = (jornada) => {
         const flujo = {
             'abierta': 'en_proceso',
             'en_proceso': 'finalizada'
@@ -153,15 +175,23 @@ export default function GestionJornadas() {
         const siguienteEstado = flujo[jornada.estado];
         if (!siguienteEstado) return;
 
-        if (!window.confirm(mensajes[jornada.estado])) return;
-
-        try {
-            const res = await axiosClient.patch(`/jornadas/${jornada.id}/estatus`, { estado: siguienteEstado });
-            setJornadas(jornadas.map(j => j.id === jornada.id ? res.data.jornada : j));
-            alert(`Jornada avanzada a: ${siguienteEstado.replace('_', ' ')}`);
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al actualizar el estado.');
-        }
+        setConfirmConfig({
+            title: 'Avanzar Etapa',
+            message: mensajes[jornada.estado],
+            isDestructive: false,
+            confirmText: 'Continuar',
+            action: async () => {
+                try {
+                    const res = await axiosClient.patch(`/jornadas/${jornada.id}/estatus`, { estado: siguienteEstado });
+                    setJornadas(prev => prev.map(j => j.id === jornada.id ? res.data.jornada : j));
+                    toast.success(`Jornada avanzada a: ${siguienteEstado.replace('_', ' ')}`);
+                } catch (error) {
+                    toast.error(error.response?.data?.message || 'Error al actualizar el estado.');
+                } finally {
+                    setConfirmConfig(null);
+                }
+            }
+        });
     };
 
     if (loading) return <div className="p-8">Cargando gestión de jornadas...</div>;
@@ -398,6 +428,17 @@ export default function GestionJornadas() {
                 </table>
                 </div>
             </div>
+
+            <ConfirmModal 
+                isOpen={!!confirmConfig}
+                title={confirmConfig?.title}
+                message={confirmConfig?.message}
+                isDestructive={confirmConfig?.isDestructive}
+                confirmText={confirmConfig?.confirmText}
+                cancelText="Cerrar ventana"
+                onConfirm={confirmConfig?.action}
+                onCancel={() => setConfirmConfig(null)}
+            />
         </div>
     );
 }

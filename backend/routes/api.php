@@ -33,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    
+    // Actualizar perfil propio
+    Route::put('/user', [AuthController::class, 'updateProfile']);
 
     Route::get('/dashboard/resumen', [DashboardController::class, 'resumen']);
     
@@ -53,4 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // 4. Rutas del Censo (Vecinos)
     Route::apiResource('vecinos', VecinoController::class)->only(['index', 'update']);
 
+    // 5. Rutas exclusivas del Super Administrador (Protección de roles delegada al Controlador)
+    Route::get('/superadmin/comunidades', [\App\Http\Controllers\Api\ComunidadController::class, 'index']);
+    Route::post('/superadmin/comunidades', [\App\Http\Controllers\Api\ComunidadController::class, 'store']);
+    Route::put('/superadmin/comunidades/{id}', [\App\Http\Controllers\Api\ComunidadController::class, 'update']);
+    Route::delete('/superadmin/comunidades/{id}', [\App\Http\Controllers\Api\ComunidadController::class, 'destroy']);
+
+    Route::get('/superadmin/usuarios', [\App\Http\Controllers\Api\UsuarioController::class, 'index']);
+    Route::patch('/superadmin/usuarios/{id}/rol', [\App\Http\Controllers\Api\UsuarioController::class, 'asignarRol']);
 });

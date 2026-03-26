@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 import axiosClient from '@/lib/axios';
 import Cookies from 'js-cookie';
 
@@ -45,7 +46,7 @@ export default function Registro() {
             router.push('/dashboard');
             
         } catch (error) {
-            alert(error.response?.data?.message || 'Error al registrar. Verifica los datos.');
+            toast.error(error.response?.data?.message || 'Error al registrar. Verifica los datos.');
             setLoading(false);
         }
     };

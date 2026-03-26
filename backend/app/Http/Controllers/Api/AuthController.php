@@ -69,4 +69,37 @@ class AuthController extends Controller
             ]
         ]);
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'telefono' => 'required|string|unique:users,telefono,' . $user->id,
+            'identificador_vivienda' => 'required|string|max:50',
+            'comunidad_id' => 'nullable|exists:comunidades,id',
+            'password' => 'nullable|string|min:6'
+        ]);
+
+        $user->name = $request->name;
+        $user->telefono = $request->telefono;
+        $user->identificador_vivienda = $request->identificador_vivienda;
+        
+        // Solo un vecino ordinario puede mudarse libremente de comunidad. Los coordinadores deben ser trasladados por el SuperAdmin.
+        if ($user->rol === 'vecino' && $request->filled('comunidad_id')) {
+            $user->comunidad_id = $request->comunidad_id;
+        }
+
+        if ($request->filled('password')) {
+            $user->password = $request->password;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Tus datos se actualizaron correctamente.',
+            'user' => $user
+        ]);
+    }
 }

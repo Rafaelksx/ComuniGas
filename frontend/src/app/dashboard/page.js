@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
     const [isAdmin, setIsAdmin] = useState(true);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [userName, setUserName] = useState('');
     const [stats, setStats] = useState({
         total_bs: 0, total_usd: 0, total_pedidos: 0, vecinos_atendidos: 0,
@@ -25,7 +26,10 @@ export default function DashboardPage() {
                 setJornada(res.data.jornada);
                 setTodasJornadas(res.data.todas_jornadas || []);
                 setIsAdmin(res.data.is_admin ?? true);
-                if (res.data.user) setUserName(res.data.user.name);
+                if (res.data.user) {
+                    setUserName(res.data.user.name);
+                    setIsSuperAdmin(res.data.user.rol === 'superadmin');
+                }
             } catch (e) {
                 console.error("Error al cargar resumen");
             } finally {
@@ -47,6 +51,33 @@ export default function DashboardPage() {
 
     if (cargando) {
         return <div className="text-center py-20"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div></div>;
+    }
+
+    if (isSuperAdmin) {
+        return (
+            <div className="space-y-8 max-w-5xl mx-auto pb-10">
+                <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-3xl p-8 sm:p-12 text-white shadow-lg relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">👔 Super Administrador</h1>
+                        <p className="text-yellow-100 text-lg sm:text-xl max-w-2xl">
+                            Bienvenido, {userName}. Desde este panel tienes control sobre todas las operaciones, comunidades y nombramiento de coordinadores a nivel nacional.
+                        </p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <Link href="/dashboard/comunidades" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center block">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-indigo-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Comunidades</h3>
+                        <p className="text-gray-500">Crea nuevos sectores para expandir el alcance de ComuniGas.</p>
+                    </Link>
+                    <Link href="/dashboard/usuarios" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition group text-center block">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-yellow-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Asignar Coordinadores</h3>
+                        <p className="text-gray-500">Nombra nuevos voceros o reasígnalos de urbanización en el sistema.</p>
+                    </Link>
+                </div>
+            </div>
+        );
     }
 
     if (!isAdmin) {

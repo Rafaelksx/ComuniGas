@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import axiosClient from '@/lib/axios';
 
 export default function ListaPedidos() {
@@ -39,9 +40,9 @@ export default function ListaPedidos() {
                 }
                 return p;
             }));
-            alert('¡Estatus actualizado correctamente!');
+            toast.success('¡Estatus actualizado correctamente!');
         } catch (error) {
-            alert('Error al actualizar el estatus. Revisa la consola.');
+            toast.error('Error al actualizar el estatus. Revisa la consola.');
             console.error(error);
         }
     };

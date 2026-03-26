@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import axiosClient from '@/lib/axios';
 
 const BANCOS_VENEZUELA = [
@@ -129,7 +130,7 @@ export default function FormularioPedido() {
         } catch (err) {
             const errorDetalle = err.response?.data?.error || '';
             const msg = err.response?.data?.message || 'Error al registrar el pedido.';
-            alert(`${msg}\n\n${errorDetalle}`);
+            toast.error(`${msg}\n\n${errorDetalle}`);
             console.error('Error del servidor:', err.response?.data);
         } finally {
             setSubmitting(false);
@@ -238,21 +239,21 @@ export default function FormularioPedido() {
                                         <input type="tel" required placeholder="Ej: 04141234567"
                                             value={formData.telefono_pago}
                                             onChange={e => setFormData({ ...formData, telefono_pago: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Monto que pagaste (Bs)</label>
                                         <input type="number" step="0.01" required
                                             value={formData.monto_bs_vecino}
                                             onChange={e => setFormData({ ...formData, monto_bs_vecino: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Últimos 6 dígitos de la referencia</label>
                                         <input type="text" required maxLength={10} placeholder="Ej: 123456"
                                             value={formData.referencia_pago}
                                             onChange={e => setFormData({ ...formData, referencia_pago: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg tracking-widest" />
+                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg tracking-widest bg-white text-gray-900" />
                                     </div>
                                 </div>
 

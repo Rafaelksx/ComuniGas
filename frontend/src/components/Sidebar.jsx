@@ -15,6 +15,7 @@ export default function Sidebar({ user, closeSidebar }) {
     };
 
     const isCoordinador = user?.rol === 'admin_comunidad';
+    const isSuperAdmin = user?.rol === 'superadmin';
 
     // Objeto de configuración de rutas con SVGs
     const menuItems = {
@@ -22,15 +23,23 @@ export default function Sidebar({ user, closeSidebar }) {
             { name: 'Resumen', path: '/dashboard', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> },
             { name: 'Jornadas', path: '/dashboard/jornadas', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> },
             { name: 'Revisión de Pagos', path: '/dashboard/pedidos', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> },
+            { name: 'Mi Perfil', path: '/dashboard/perfil', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> },
         ],
         vecino: [
             { name: 'Inicio', path: '/dashboard', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> },
             { name: 'Pedir Gas', path: '/dashboard/pedidos/nuevo', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> },
             { name: 'Mis Pedidos', path: '/dashboard/pedidos', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> },
+            { name: 'Mi Perfil', path: '/dashboard/perfil', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> },
+        ],
+        superadmin: [
+            { name: 'Dashboard Global', path: '/dashboard', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> },
+            { name: 'Comunidades', path: '/dashboard/comunidades', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg> },
+            { name: 'Usuarios y Roles', path: '/dashboard/usuarios', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> },
+            { name: 'Mi Perfil', path: '/dashboard/perfil', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> },
         ]
     };
 
-    const currentMenu = isCoordinador ? menuItems.admin_comunidad : menuItems.vecino;
+    const currentMenu = isSuperAdmin ? menuItems.superadmin : (isCoordinador ? menuItems.admin_comunidad : menuItems.vecino);
 
     return (
         <aside className="w-64 bg-blue-900 text-white flex flex-col shrink-0 min-h-screen">
@@ -38,8 +47,10 @@ export default function Sidebar({ user, closeSidebar }) {
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">ComuniGas</h2>
                     <p className="text-sm text-blue-300 mt-1 truncate">{user?.name}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full mt-3 inline-block font-semibold tracking-wide ${isCoordinador ? 'bg-indigo-600 text-white' : 'bg-blue-700 text-blue-100'}`}>
-                        {isCoordinador ? 'COORDINADOR' : 'VECINO'}
+                    <span className={`text-xs px-2 py-1 rounded-full mt-3 inline-block font-semibold tracking-wide border 
+                        ${isSuperAdmin ? 'bg-yellow-100 text-yellow-800 border-yellow-200' 
+                        : (isCoordinador ? 'bg-indigo-600 text-white border-transparent' : 'bg-blue-700 text-blue-100 border-transparent')}`}>
+                        {isSuperAdmin ? 'SUPER ADMIN' : (isCoordinador ? 'COORDINADOR' : 'VECINO')}
                     </span>
                 </div>
                 <button 

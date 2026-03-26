@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axiosClient from '@/lib/axios';
+import { toast } from 'react-hot-toast';
 
 export default function VecinosPage() {
     const [vecinos, setVecinos] = useState([]);
@@ -28,7 +29,7 @@ export default function VecinosPage() {
                 await axiosClient.put(`/vecinos/${id}`, { identificador_vivienda: nuevaVivienda });
                 setVecinos(vecinos.map(v => v.id === id ? { ...v, identificador_vivienda: nuevaVivienda } : v));
             } catch (error) {
-                alert('Error al actualizar la vivienda');
+                toast.error('Error al actualizar la vivienda');
             }
         }
     };
