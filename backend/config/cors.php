@@ -20,7 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     // Allowed origins (frontend origin). Use env to keep it configurable.
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => [rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/')],
 
     // Use patterns if you need wildcard support like https://*.example.com
     'allowed_origins_patterns' => [],

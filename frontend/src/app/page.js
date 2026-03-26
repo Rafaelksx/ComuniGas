@@ -12,7 +12,7 @@ export default function Home() {
         </div>
         <div className="gap-4 hidden sm:flex">
           <Link href="/login" className="text-gray-600 font-semibold hover:text-indigo-600 transition px-4 py-2">Ingresar</Link>
-          <Link href="/register" className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg transition">Registrar mi casa</Link>
+          <Link href="/registro" className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg transition">Registrar mi casa</Link>
         </div>
       </nav>
 
