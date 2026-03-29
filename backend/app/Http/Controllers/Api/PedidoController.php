@@ -21,12 +21,12 @@ class PedidoController extends Controller
                     $query->where('comunidad_id', $user->comunidad_id);
                 })
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate(50);
         } else {
             $pedidos = Pedido::with(['jornada', 'detalles.lote', 'pagos'])
                 ->where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate(50);
         }
 
         return response()->json($pedidos);
@@ -74,13 +74,12 @@ class PedidoController extends Controller
             // 1. Guardar comprobante si viene
             $comprobantePath = null;
             if ($request->hasFile('comprobante')) {
-                if (env('CLOUDINARY_URL')) {
-                    // Sube a Cloudinary si está configurado para producción
+                // Usa config() en vez de env() para que funcione con config:cache en producción
+                if (config('services.cloudinary.url')) {
                     $comprobantePath = cloudinary()->upload($request->file('comprobante')->getRealPath(), [
-                        'folder' => 'comunigas_comprobantes'
+                        'folder' => config('services.cloudinary.folder')
                     ])->getSecurePath();
                 } else {
-                    // Guarda localmente
                     $comprobantePath = $request->file('comprobante')
                         ->store('comprobantes', 'public');
                 }
@@ -129,11 +128,24 @@ class PedidoController extends Controller
         }
     }
 
+    // ─── Helpers privados ───────────────────────────────────────────────────────
+
+    /**
+     * Busca un pedido que pertenezca a la comunidad del usuario autenticado.
+     * Evita la duplicación del whereHas en todos los métodos de acción.
+     */
+    private function getPedidoDeComunidad(int $id, $user): Pedido
+    {
+        return Pedido::whereHas('user', function ($query) use ($user) {
+            $query->where('comunidad_id', $user->comunidad_id);
+        })->findOrFail($id);
+    }
+
+    // ─── Acciones del Coordinador ──────────────────────────────────────────────
+
     public function verificarPago(Request $request, $id)
     {
-        $pedido = Pedido::whereHas('user', function($query) use ($request) {
-            $query->where('comunidad_id', $request->user()->comunidad_id);
-        })->findOrFail($id);
+        $pedido = $this->getPedidoDeComunidad($id, $request->user());
         $pedido->estado_pago = 'verificado';
         if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'aprobado']);
@@ -143,22 +155,9 @@ class PedidoController extends Controller
         return response()->json(['message' => 'Pago verificado exitosamente.']);
     }
 
-    public function entregar(Request $request, $id)
-    {
-        $pedido = Pedido::whereHas('user', function($query) use ($request) {
-            $query->where('comunidad_id', $request->user()->comunidad_id);
-        })->findOrFail($id);
-        $pedido->estado_fisico = 'llena_recibida';
-        $pedido->save();
-
-        return response()->json(['message' => 'Bombona marcada como entregada.']);
-    }
-
     public function rechazarPago(Request $request, $id)
     {
-        $pedido = Pedido::whereHas('user', function($query) use ($request) {
-            $query->where('comunidad_id', $request->user()->comunidad_id);
-        })->findOrFail($id);
+        $pedido = $this->getPedidoDeComunidad($id, $request->user());
         $pedido->estado_pago = 'rechazado';
         if ($pedido->pagos()->exists()) {
             $pedido->pagos()->update(['estado' => 'rechazado']);
@@ -170,12 +169,19 @@ class PedidoController extends Controller
 
     public function recibirVacia(Request $request, $id)
     {
-        $pedido = Pedido::whereHas('user', function($query) use ($request) {
-            $query->where('comunidad_id', $request->user()->comunidad_id);
-        })->findOrFail($id);
+        $pedido = $this->getPedidoDeComunidad($id, $request->user());
         $pedido->estado_fisico = 'vacia_entregada';
         $pedido->save();
 
         return response()->json(['message' => 'Cilindro vacío recibido por el coordinador.']);
+    }
+
+    public function entregar(Request $request, $id)
+    {
+        $pedido = $this->getPedidoDeComunidad($id, $request->user());
+        $pedido->estado_fisico = 'llena_recibida';
+        $pedido->save();
+
+        return response()->json(['message' => 'Bombona marcada como entregada.']);
     }
 }

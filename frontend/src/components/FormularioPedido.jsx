@@ -31,6 +31,7 @@ export default function FormularioPedido() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
 
     // carrito: { [loteId]: cantidad }
     const [carrito, setCarrito] = useState({});
@@ -109,6 +110,7 @@ export default function FormularioPedido() {
         e.preventDefault();
         if (carritoVacio) return;
         setSubmitting(true);
+        setFieldErrors({});
         try {
             const data = new FormData();
             data.append('jornada_id', jornada.id);
@@ -116,7 +118,6 @@ export default function FormularioPedido() {
             data.append('banco_origen', formData.banco_origen);
             data.append('telefono_pago', formData.telefono_pago);
             data.append('monto_bs_vecino', formData.monto_bs_vecino);
-            // Enviar cada item del carrito
             itemsCarrito.forEach((item, idx) => {
                 data.append(`items[${idx}][lote_id]`, item.lote.id);
                 data.append(`items[${idx}][cantidad]`, item.cantidad);
@@ -126,11 +127,17 @@ export default function FormularioPedido() {
             await axiosClient.post('/pedidos', data, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
+            toast.success('¡Pedido registrado correctamente!');
             router.push('/dashboard/pedidos');
         } catch (err) {
-            const errorDetalle = err.response?.data?.error || '';
-            const msg = err.response?.data?.message || 'Error al registrar el pedido.';
-            toast.error(`${msg}\n\n${errorDetalle}`);
+            // Si Laravel devuelve errores de validación (422), los mostramos por campo
+            if (err.response?.status === 422 && err.response?.data?.errors) {
+                setFieldErrors(err.response.data.errors);
+                toast.error('Revisa los campos marcados en rojo.');
+            } else {
+                const msg = err.response?.data?.message || 'Error al registrar el pedido.';
+                toast.error(msg);
+            }
             console.error('Error del servidor:', err.response?.data);
         } finally {
             setSubmitting(false);
@@ -229,31 +236,43 @@ export default function FormularioPedido() {
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Banco desde el que pagaste</label>
                                         <select required value={formData.banco_origen}
                                             onChange={e => setFormData({ ...formData, banco_origen: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800">
+                                            className={`w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800 ${
+                                                fieldErrors.banco_origen ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                                            }`}>
                                             <option value="">Selecciona tu banco...</option>
                                             {BANCOS_VENEZUELA.map(b => <option key={b} value={b}>{b}</option>)}
                                         </select>
+                                        {fieldErrors.banco_origen && <p className="text-red-500 text-xs mt-1">{fieldErrors.banco_origen[0]}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono desde el que pagaste</label>
                                         <input type="tel" required placeholder="Ej: 04141234567"
                                             value={formData.telefono_pago}
                                             onChange={e => setFormData({ ...formData, telefono_pago: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                                            className={`w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 ${
+                                                fieldErrors.telefono_pago ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                                            }`} />
+                                        {fieldErrors.telefono_pago && <p className="text-red-500 text-xs mt-1">{fieldErrors.telefono_pago[0]}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Monto que pagaste (Bs)</label>
                                         <input type="number" step="0.01" required
                                             value={formData.monto_bs_vecino}
                                             onChange={e => setFormData({ ...formData, monto_bs_vecino: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900" />
+                                            className={`w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 ${
+                                                fieldErrors.monto_bs_vecino ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                                            }`} />
+                                        {fieldErrors.monto_bs_vecino && <p className="text-red-500 text-xs mt-1">{fieldErrors.monto_bs_vecino[0]}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Últimos 6 dígitos de la referencia</label>
                                         <input type="text" required maxLength={10} placeholder="Ej: 123456"
                                             value={formData.referencia_pago}
                                             onChange={e => setFormData({ ...formData, referencia_pago: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg tracking-widest bg-white text-gray-900" />
+                                            className={`w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg tracking-widest bg-white text-gray-900 ${
+                                                fieldErrors.referencia_pago ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                                            }`} />
+                                        {fieldErrors.referencia_pago && <p className="text-red-500 text-xs mt-1">{fieldErrors.referencia_pago[0]}</p>}
                                     </div>
                                 </div>
 

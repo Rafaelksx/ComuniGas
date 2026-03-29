@@ -46,12 +46,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/lotes/{id}/estatus', [JornadaController::class, 'updateLote']);
 
     // 3. Rutas de Pedidos
-    Route::apiResource('pedidos', PedidoController::class)->except(['update', 'destroy']);
-    // Rutas específicas para el flujo del pedido
-    Route::patch('/pedidos/{id}/verificar', [PedidoController::class, 'verificarPago']);
-    Route::patch('/pedidos/{id}/rechazar', [PedidoController::class, 'rechazarPago']); // NUEVA
-    Route::patch('/pedidos/{id}/recibir-vacia', [PedidoController::class, 'recibirVacia']); // NUEVA
-    Route::patch('/pedidos/{id}/entregar', [PedidoController::class, 'entregar']);
+    // El vecino puede ver sus pedidos y crear uno nuevo
+    Route::get('pedidos', [PedidoController::class, 'index']);
+    Route::post('pedidos', [PedidoController::class, 'store']);
+
+    // Las acciones de gestión solo las puede hacer el Coordinador o SuperAdmin
+    Route::middleware(\App\Http\Middleware\EnsureIsAdmin::class)->group(function () {
+        Route::patch('/pedidos/{id}/verificar',    [PedidoController::class, 'verificarPago']);
+        Route::patch('/pedidos/{id}/rechazar',     [PedidoController::class, 'rechazarPago']);
+        Route::patch('/pedidos/{id}/recibir-vacia',[PedidoController::class, 'recibirVacia']);
+        Route::patch('/pedidos/{id}/entregar',     [PedidoController::class, 'entregar']);
+    });
 
     // 4. Rutas del Censo (Vecinos)
     Route::apiResource('vecinos', VecinoController::class)->only(['index', 'update']);

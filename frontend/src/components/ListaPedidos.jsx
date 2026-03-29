@@ -23,39 +23,36 @@ export default function ListaPedidos() {
         }, 150);
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const userRes = await axiosClient.get('/user');
-                setUser(userRes.data);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const userRes = await axiosClient.get('/user');
+            setUser(userRes.data);
 
-                const pedidosRes = await axiosClient.get('/pedidos');
-                setPedidos(pedidosRes.data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
+            const pedidosRes = await axiosClient.get('/pedidos');
+            // Si la respuesta usa paginación de Laravel, los datos vienen en .data
+            const data = pedidosRes.data?.data ?? pedidosRes.data;
+            setPedidos(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const cambiarEstatus = async (id, accion) => {
         try {
             await axiosClient.patch(`/pedidos/${id}/${accion}`);
-            setPedidos(pedidos.map(p => {
-                if (p.id === id) {
-                    return {
-                        ...p,
-                        estado_pago: accion === 'verificar' ? 'verificado' : (accion === 'rechazar' ? 'rechazado' : p.estado_pago),
-                        estado_fisico: accion === 'recibir-vacia' ? 'vacia_entregada' : (accion === 'entregar' ? 'llena_recibida' : p.estado_fisico)
-                    };
-                }
-                return p;
-            }));
             toast.success('¡Estatus actualizado correctamente!');
+            // Re-fetch desde el servidor para garantizar consistencia de datos
+            await fetchData();
         } catch (error) {
-            toast.error('Error al actualizar el estatus. Revisa la consola.');
+            toast.error('Error al actualizar el estatus.');
             console.error(error);
         }
     };

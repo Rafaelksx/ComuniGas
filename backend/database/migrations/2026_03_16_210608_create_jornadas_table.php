@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('fecha_cierre_pagos'); // Hasta cuándo el vecino puede reportar pago
             
             // El ciclo de vida de la jornada
-            $table->enum('estado', ['abierta', 'recepcion_cilindros', 'en_planta', 'finalizada'])->default('abierta');
+            $table->enum('estado', ['abierta', 'en_proceso', 'finalizada', 'cancelada'])->default('abierta');
             $table->timestamps();
         });
     }

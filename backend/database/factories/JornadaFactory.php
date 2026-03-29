@@ -17,7 +17,7 @@ class JornadaFactory extends Factory
             'tasa_bcv_dia' => $this->faker->randomFloat(2, 35, 45),
             'fecha_apertura' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
             'fecha_cierre_pagos' => clone $this->faker->dateTimeBetween('-1 week', '+1 week'),
-            'estado' => $this->faker->randomElement(['abierta', 'en_proceso', 'finalizada', 'cancelada']),
+            'estado' => $this->faker->randomElement(['abierta', 'finalizada']),
             'pago_movil_banco' => $this->faker->company,
             'pago_movil_telefono' => $this->faker->phoneNumber,
             'pago_movil_cedula' => $this->faker->numerify('V-########'),

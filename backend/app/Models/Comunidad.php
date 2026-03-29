@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Comunidad extends Model
 {
+    use HasFactory;
+
     protected $table = 'comunidades'; // Buenas prácticas: definir el nombre exacto de la tabla
     protected $guarded = []; // Permite asignación masiva de todos los campos
 
